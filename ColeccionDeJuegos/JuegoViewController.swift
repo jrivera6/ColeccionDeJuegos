@@ -12,16 +12,26 @@ class JuegoViewController: UIViewController, UIImagePickerControllerDelegate, UI
 
     
     @IBOutlet weak var JuegoImageView: UIImageView!
-    
-    
     @IBOutlet weak var tituloTextField: UITextField!
+    @IBOutlet weak var agregarActualizarBoton: UIButton!
+    @IBOutlet weak var eliminarBoton: UIButton!
+    
     
     var imagePicker = UIImagePickerController()
+    var juego : Juego? = nil
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
         imagePicker.delegate = self
+        
+        if juego != nil{
+            JuegoImageView.image = UIImage(data: (juego!.imagen!) as Data)
+            tituloTextField.text = juego!.titulo
+            agregarActualizarBoton.setTitle("Actualizar", for: .normal)
+        }else{
+            eliminarBoton.isHidden = true
+        }
     }
     
     
@@ -47,21 +57,39 @@ class JuegoViewController: UIViewController, UIImagePickerControllerDelegate, UI
     }
     
     @IBAction func camaraStapped(_ sender: Any) {
+        
+        imagePicker.sourceType = .camera
+        present(imagePicker, animated: true, completion: nil)
     }
     
     @IBAction func agregarStapped(_ sender: Any) {
         
         let delegate = (UIApplication.shared.delegate as! AppDelegate)
-        let context = delegate.persistentContainer.viewContext
         
-        let juego = Juego(context: context)
-        juego.titulo = tituloTextField.text
-        juego.imagen = UIImagePNGRepresentation(JuegoImageView.image!) as Data?
+        if juego != nil{
+            juego!.titulo = tituloTextField.text
+            juego!.imagen = UIImagePNGRepresentation(JuegoImageView.image!) as Data?
+        }else{
+            let context = delegate.persistentContainer.viewContext
+            let juego = Juego(context: context)
+            juego.titulo = tituloTextField.text
+            juego.imagen = UIImagePNGRepresentation(JuegoImageView.image!) as Data?
+        }
         
         delegate.saveContext()
         navigationController!.popViewController(animated: true)
         
+    }
+    
+    @IBAction func eliminarTapped(_ sender: Any) {
+    
+        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+        
+        context.delete(juego!)
+        (UIApplication.shared.delegate as! AppDelegate).saveContext()
+        navigationController!.popViewController(animated: true)
         
     }
+    
     
 }
